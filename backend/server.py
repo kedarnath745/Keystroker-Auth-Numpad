@@ -881,6 +881,8 @@ def _resolve_cors_configuration() -> dict:
         parsed_origins = [
             origin.strip() for origin in origins_env.split(",") if origin.strip()
         ]
+        # When CORS_ORIGINS is explicitly set, don't use regex - use the exact origins
+        allow_origin_regex = None
     else:
         parsed_origins = [
             "http://localhost:3000",
@@ -892,13 +894,13 @@ def _resolve_cors_configuration() -> dict:
             "https://localhost:5173",
             "https://127.0.0.1:5173",
         ]
+        # Local development - allow localhost and 127.0.0.1
+        allow_origin_regex = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
 
-    allow_origin_regex = None
+    # Handle wildcard
     if any(origin == "*" for origin in parsed_origins):
         allow_origin_regex = ".*"
         parsed_origins = [origin for origin in parsed_origins if origin != "*"]
-    else:
-        allow_origin_regex = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
 
     return {
         "allow_origins": parsed_origins,
