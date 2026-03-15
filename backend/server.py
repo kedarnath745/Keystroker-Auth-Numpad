@@ -912,7 +912,7 @@ cors_config = _resolve_cors_configuration()
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=cors_config["allow_origins"],
+    allow_origins=cors_config["allow_origins"] if cors_config["allow_origins"] else ["*"],
     allow_origin_regex=cors_config["allow_origin_regex"],
     allow_methods=["*"],
     allow_headers=["*"],
