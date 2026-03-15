@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # MongoDB database service
+  mongodb:
+    image: mongo:7.0
+    container_name: keystroke_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: keystroke_secure_password
+      MONGO_INITDB_DATABASE: keystroke_auth
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - keystroke_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: keystroke_backend
+    restart: unless-stopped
+    environment:
+      MONGO_URL: mongodb://admin:keystroke_secure_password@mongodb:27017
+      DB_NAME: keystroke_auth
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    networks:
+      - keystroke_network
+    command: uvicorn server:app --host 0.0.0.0 --port 8000 --reload
+
+  # React frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: keystroke_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - keystroke_network
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+
+networks:
+  keystroke_network:
+    driver: bridge
