@@ -49,7 +49,7 @@ class KeystrokeMLPipeline:
 
         # Authentication thresholds
         self.auth_thresholds = {}
-        self.default_threshold = 0.7
+        self.default_threshold = 0.6
 
         self._initialize_models()
 
