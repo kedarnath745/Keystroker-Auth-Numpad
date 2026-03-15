@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: keystroker-auth-backend
+    env: python
+    region: oregon
+    plan: free
+    pythonVersion: 3.11
+    buildCommand: "pip install -r backend/requirements-prod.txt"
+    startCommand: "cd backend && python server.py"
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: DB_NAME
+        value: keystroker_auth
+      - key: CORS_ORIGINS
+        value: "https://keystroker.vercel.app"
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO

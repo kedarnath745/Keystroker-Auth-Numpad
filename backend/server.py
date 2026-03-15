@@ -932,3 +932,25 @@ logger.info(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    # Get configuration from environment variables
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT", 8000))
+    env = os.environ.get("ENVIRONMENT", "development")
+    
+    # Development or production mode
+    reload = env != "production"
+    
+    logger.info(f"Starting Keystroker Auth API on {host}:{port} ({env} mode)")
+    
+    uvicorn.run(
+        "server:app",
+        host=host,
+        port=port,
+        reload=reload,
+        log_level="info",
+    )
